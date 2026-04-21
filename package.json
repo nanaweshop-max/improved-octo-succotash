@@ -1,0 +1,9 @@
+{
+  "name": "crystal-era-game",
+  "version": "1.0.0",
+  "description": "晶界紀元 Crystal Era Game",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {}
+}
