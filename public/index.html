@@ -2368,10 +2368,10 @@ function loadLiffSDK(){
 
 async function loadPlayerIdentity(){
   PLAYER_ID=generateFingerprint();
-  // 先嘗試 LIFF 登入
+  // 先嘗試處理 LINE OAuth 回調或 session
   var liffOk=await initLiff();
   if(liffOk){
-    // LINE 已登入：儲存並更新
+    // LINE 已登入
     selectedColorIdx=Math.floor(Math.random()*AVATAR_COLORS.length);
     PLAYER_COLOR=AVATAR_COLORS[selectedColorIdx];
     try{
@@ -2383,7 +2383,6 @@ async function loadPlayerIdentity(){
       }
       await window.storage.set('player:line:'+LINE_USER_ID,JSON.stringify({name:PLAYER_NAME,color:PLAYER_COLOR}),false);
     }catch(e){}
-    // 顯示 LINE 標記
     var badge=document.getElementById('player-name-badge');
     if(badge)badge.innerHTML=PLAYER_NAME+' <span style="color:#06c755;font-size:.55rem;">LINE</span>';
     var av=document.getElementById('player-avatar');
@@ -2392,12 +2391,22 @@ async function loadPlayerIdentity(){
     var lbNameEl=document.getElementById('lb-name');if(lbNameEl)lbNameEl.value=PLAYER_NAME;
     return;
   }
-  // LIFF 未登入：走一般流程
+  // 沒有 LINE ID：自動跳轉 LINE 登入
+  // 但不要在每次重整時都跳，用 sessionStorage 防止迴圈
+  var didTryLogin=sessionStorage.getItem('line_login_tried');
+  if(!didTryLogin){
+    sessionStorage.setItem('line_login_tried','1');
+    dbg('自動觸發 LINE 登入...');
+    lineLogin();
+    return;
+  }
+  // 已嘗試登入但失敗（用戶取消）：走一般流程
+  dbg('LINE 登入取消或失敗，走一般流程');
   try{
-    var stored=await window.storage.get('player:'+PLAYER_ID,false).catch(function(){return null;});
-    if(stored&&stored.value){
-      var data=JSON.parse(stored.value);
-      PLAYER_NAME=data.name||'玩家';PLAYER_COLOR=data.color||'#5bc8e0';
+    var stored2=await window.storage.get('player:'+PLAYER_ID,false).catch(function(){return null;});
+    if(stored2&&stored2.value){
+      var data2=JSON.parse(stored2.value);
+      PLAYER_NAME=data2.name||'玩家';PLAYER_COLOR=data2.color||'#5bc8e0';
       selectedColorIdx=Math.max(0,AVATAR_COLORS.indexOf(PLAYER_COLOR));
     } else {
       selectedColorIdx=Math.floor(Math.random()*AVATAR_COLORS.length);
@@ -2407,7 +2416,7 @@ async function loadPlayerIdentity(){
     }
   }catch(e){}
   updatePlayerBadge();
-  var lbNameEl=document.getElementById('lb-name');if(lbNameEl)lbNameEl.value=PLAYER_NAME;
+  var lbNameEl2=document.getElementById('lb-name');if(lbNameEl2)lbNameEl2.value=PLAYER_NAME;
 }
 async function savePlayerIdentity(){
   try{await window.storage.set('player:'+PLAYER_ID,JSON.stringify({name:PLAYER_NAME,color:PLAYER_COLOR}),false);}catch(e){}
