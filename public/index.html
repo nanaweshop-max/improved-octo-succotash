@@ -1729,7 +1729,7 @@ function favCrystal(e){
 // 排行榜從 Vercel API 讀取（同網域，LINE WebView 可以存取）
 async function loadLeaderboard(){
   try{
-    var res=await fetch('https://crystal-era-game.vercel.app/api/leaderboard',{method:'GET'});
+    var res=await fetch('https://improved-octo-succotash.vercel.app/api/leaderboard',{method:'GET'});
     var data=await res.json();
     if(data&&data.leaderboard){
       return data.leaderboard.map(function(e){
