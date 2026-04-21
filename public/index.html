@@ -856,9 +856,7 @@ canvas#next-canvas{display:block;background:transparent;}
 
 // ══ 關卡設定 ══
 var STAGES = [
-  {stage:1, time:1*60, target:300, label:'第 1 關', targetLabel:'目標：300 能量'},
-  {stage:2, time:1*60, target:700, label:'第 2 關', targetLabel:'累積目標：700 能量', cumulative:true},
-  {stage:3, time:1*60, target:null, label:'第 3 關', targetLabel:'盡情收集！'}
+  {stage:1, time:3*60, target:null, label:'晶界紀元', targetLabel:'盡情收集能量！'}
 ];
 var currentStage  = 0;
 var totalScore    = 0;
@@ -1726,35 +1724,16 @@ function favCrystal(e){
   return best||'JADE';
 }
 
-// 排行榜從 Vercel API 讀取（同網域，LINE WebView 可以存取）
+// 排行榜從 Claude Storage 讀取（本地快取）
 async function loadLeaderboard(){
   try{
-    var res=await fetch('https://improved-octo-succotash.vercel.app/api/leaderboard',{method:'GET'});
-    var data=await res.json();
-    if(data&&data.leaderboard){
-      return data.leaderboard.map(function(e){
-        return {
-          name:e.name||'玩家',
-          score:parseInt(e.score)||0,
-          crystal:e.crystal||'JADE',
-          lineId:e.lineId||'',
-          fp:e.lineId||e.deviceId||'',
-          color:'#5bc8e0',cs:{}
-        };
-      });
-    }
-  }catch(e){
-    // 備援：從 Claude Storage 讀取
-    try{
-      var keys=['lb:1','lb:2','lb:3','lb:4','lb:5','lb:6','lb:7','lb:8','lb:9','lb:10'];
-      var results=await Promise.all(keys.map(function(k){return window.storage.get(k,true).catch(function(){return null;});}));
-      var entries=[];
-      results.forEach(function(r){if(r&&r.value)try{entries.push(JSON.parse(r.value));}catch(ex){}});
-      entries.sort(function(a,b){return b.score-a.score;});
-      return entries;
-    }catch(ex){}
-  }
-  return[];
+    var keys=['lb:1','lb:2','lb:3','lb:4','lb:5','lb:6','lb:7','lb:8','lb:9','lb:10'];
+    var results=await Promise.all(keys.map(function(k){return window.storage.get(k,true).catch(function(){return null;});}));
+    var entries=[];
+    results.forEach(function(r){if(r&&r.value)try{entries.push(JSON.parse(r.value));}catch(e){}});
+    entries.sort(function(a,b){return b.score-a.score;});
+    return entries;
+  }catch(e){return[];}
 }
 
 // 提交分數到 Google Sheets
