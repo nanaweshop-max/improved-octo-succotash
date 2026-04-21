@@ -1,7 +1,7 @@
 const https = require('https');
 
 const CHANNEL_ID = '2009845175';
-const REDIRECT_URI = 'https://crystal-era-game.vercel.app';
+const REDIRECT_URI = 'https://improved-octo-succotash.vercel.app';
 
 // 用 code 換 access token
 function getToken(code) {
